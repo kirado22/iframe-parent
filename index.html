@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Communication Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .message-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-section h2 {
+            margin-top: 0;
+            color: #ffd700;
+            font-size: 1.3em;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .messages-log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .message-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .message-item.sent {
+            border-left-color: #2196F3;
+        }
+        
+        .message-item.received {
+            border-left-color: #FF9800;
+        }
+        
+        .timestamp {
+            color: #bbb;
+            font-size: 12px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Iframe Communication</h1>
+        
+        <div class="message-section">
+            <h2>📤 Send Message to Parent</h2>
+            <input type="text" id="messageInput" placeholder="Enter your message here..." />
+            <textarea id="dataInput" placeholder="Optional: JSON data to send"></textarea>
+            <button onclick="sendMessageToParent()">Send Message</button>
+            <button onclick="setCookieDirectly()">Set Cookie (SameSite=None)</button>
+            <button onclick="clearInputs()">Clear</button>
+        </div>
+        
+        <div class="message-section">
+            <h2>📨 Messages Log</h2>
+            <div id="messagesLog" class="messages-log">
+                <div class="message-item">
+                    <span class="timestamp">Ready</span> - Waiting for messages...
+                </div>
+            </div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="status">
+            <strong>Status:</strong> <span id="status">Ready for communication</span>
+        </div>
+    </div>
+
+    <script>
+        // Log function to add messages to the display
+        function logMessage(message, type = 'info') {
+            const log = document.getElementById('messagesLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-item ${type}`;
+            messageDiv.innerHTML = `
+                <span class="timestamp">${timestamp}</span> - ${message}
+            `;
+            log.appendChild(messageDiv);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Listen for messages from parent window
+        window.addEventListener('message', function(event) {
+            console.log('Received message from parent:', event);
+            
+            // For security, check event.origin in production
+            // Uncomment next line if you want to restrict to specific parent origin:
+            // if (event.origin !== 'http://127.0.0.1:5500') return;
+            
+            const data = event.data;
+            logMessage(`Received: ${JSON.stringify(data)}`, 'received');
+            
+            // Update status
+            document.getElementById('status').textContent = `Last received: ${new Date().toLocaleTimeString()}`;
+            
+            // Handle specific message types
+            if (data.type === 'ping') {
+                // Auto-respond to ping with pong
+                sendMessageToParent('pong', { originalTimestamp: data.timestamp });
+                logMessage('Auto-responded with pong', 'sent');
+            } else if (data.message === 'logCookies') {
+                // Log all cookies when requested
+                const cookies = document.cookie;
+                logMessage(`🍪 Current cookies: ${cookies || 'No cookies found'}`, 'received');
+                
+                // Send cookies back to parent
+                sendMessageToParent('cookies-logged', { 
+                    cookies: cookies,
+                    cookieCount: cookies ? cookies.split(';').length : 0,
+                    domain: window.location.hostname,
+                    url: window.location.href
+                });
+            } else if (data.message === 'setCookies') {
+                // Set a test cookie - try different approaches for cross-origin
+                const isHTTPS = window.location.protocol === 'https:';
+                const cookieString = isHTTPS 
+                    ? "hello=world; path=/; SameSite=None; Secure"
+                    : "hello=world; path=/; SameSite=Lax";
+                
+                document.cookie = cookieString;
+                logMessage(`🍪 Attempted to set cookie: ${cookieString}`, 'received');
+                
+                // Check immediately if cookie was set
+                const cookies = document.cookie;
+                const wasSet = cookies.includes('hello=world');
+                logMessage(`🍪 Cookie set success: ${wasSet}`, 'received');
+                logMessage(`🍪 Current cookies: ${cookies || 'No cookies found'}`, 'received');
+                
+                // Send cookies back to parent
+                sendMessageToParent('cookies-logged', { 
+                    cookies: cookies,
+                    cookieCount: cookies ? cookies.split(';').length : 0,
+                    domain: window.location.hostname,
+                    url: window.location.href
+                });
+            }
+        });
+
+        // Send message to parent window
+        function sendMessageToParent(customMessage = null, customData = null) {
+            const messageInput = document.getElementById('messageInput');
+            const dataInput = document.getElementById('dataInput');
+            
+            const message = customMessage || messageInput.value || 'Hello from iframe!';
+            let data = customData;
+            
+            if (!customData && dataInput.value) {
+                try {
+                    data = JSON.parse(dataInput.value);
+                } catch (e) {
+                    data = { text: dataInput.value };
+                }
+            }
+            
+            const payload = {
+                type: 'iframe-message',
+                message: message,
+                timestamp: new Date().toISOString(),
+                data: data
+            };
+            
+            // Send to parent window (use '*' for any origin, or specify specific origin for security)
+            window.parent.postMessage(payload, '*');
+            
+            logMessage(`Sent: ${JSON.stringify(payload)}`, 'sent');
+            document.getElementById('status').textContent = `Last sent: ${new Date().toLocaleTimeString()}`;
+            
+            // Clear inputs if not a custom message
+            if (!customMessage) {
+                clearInputs();
+            }
+        }
+
+        // Clear input fields
+        function clearInputs() {
+            document.getElementById('messageInput').value = '';
+            document.getElementById('dataInput').value = '';
+        }
+
+        // Clear messages log
+        function clearLog() {
+            document.getElementById('messagesLog').innerHTML = `
+                <div class="message-item">
+                    <span class="timestamp">Cleared</span> - Log cleared
+                </div>
+            `;
+        }
+
+        // Set cookie directly from button click
+        function setCookieDirectly() {
+            const isHTTPS = window.location.protocol === 'https:';
+            const cookieString = isHTTPS 
+                ? "original-cookie=test-value; path=/; SameSite=None; Secure"
+                : "original-cookie=test-value; path=/; SameSite=Lax";
+            
+            document.cookie = cookieString;
+            logMessage(`🍪 Direct cookie set: ${cookieString}`, 'info');
+            
+            // Check immediately if cookie was set
+            const cookies = document.cookie;
+            const wasSet = cookies.includes('original-cookie=test-value');
+            logMessage(`🍪 Cookie set success: ${wasSet}`, wasSet ? 'info' : 'received');
+            
+            if (wasSet) {
+                logMessage(`🍪 All cookies: ${cookies}`, 'info');
+            }
+        }
+
+        // Send initial ready message to parent
+        window.addEventListener('load', function() {
+            sendMessageToParent('iframe-ready', { 
+                url: window.location.href,
+                userAgent: navigator.userAgent 
+            });
+        });
+
+        // Handle Enter key in message input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessageToParent();
+            }
+        });
+
+        console.log('Iframe communication script loaded');
+    </script>
+</body>
+</html>
