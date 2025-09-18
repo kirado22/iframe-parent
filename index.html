@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iframe Communication Demo</title>
+    <title>Parent Page - Iframe Communication Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
             margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             min-height: 100vh;
-            box-sizing: border-box;
         }
         
         .container {
-            max-width: 600px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         h1 {
@@ -32,133 +26,167 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .message-section {
-            margin-bottom: 30px;
-            padding: 20px;
+        .controls {
             background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
         }
         
-        .message-section h2 {
+        .controls h2 {
             margin-top: 0;
-            color: #ffd700;
-            font-size: 1.3em;
+            color: #3498db;
+        }
+        
+        .iframe-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .iframe-wrapper {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        
+        .parent-controls {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
         }
         
         input[type="text"], textarea {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         textarea {
-            height: 100px;
+            height: 80px;
             resize: vertical;
         }
         
         button {
-            background: #ff6b6b;
+            background: #e74c3c;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-size: 14px;
             margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
         }
         
         button:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            background: #c0392b;
+            transform: translateY(-1px);
         }
         
-        .messages-log {
-            background: rgba(0, 0, 0, 0.3);
+        button.secondary {
+            background: #95a5a6;
+        }
+        
+        button.secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.4);
             padding: 15px;
             border-radius: 8px;
             max-height: 200px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.4;
+            margin-top: 15px;
         }
         
-        .message-item {
-            margin-bottom: 10px;
-            padding: 8px;
+        .log-item {
+            margin-bottom: 8px;
+            padding: 6px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            border-left: 3px solid #27ae60;
         }
         
-        .message-item.sent {
-            border-left-color: #2196F3;
+        .log-item.sent {
+            border-left-color: #3498db;
         }
         
-        .message-item.received {
-            border-left-color: #FF9800;
+        .log-item.received {
+            border-left-color: #f39c12;
         }
         
         .timestamp {
-            color: #bbb;
-            font-size: 12px;
+            color: #bdc3c7;
+            font-size: 11px;
         }
         
-        .status {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(76, 175, 80, 0.2);
-            border-radius: 8px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            text-align: center;
+        @media (max-width: 768px) {
+            .iframe-container {
+                flex-direction: column;
+            }
+            
+            iframe {
+                height: 400px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Iframe Communication</h1>
+        <h1>🌐 Parent Page - Iframe Communication Test</h1>
         
-        <div class="message-section">
-            <h2>📤 Send Message to Parent</h2>
-            <input type="text" id="messageInput" placeholder="Enter your message here..." />
-            <textarea id="dataInput" placeholder="Optional: JSON data to send"></textarea>
-            <button onclick="sendMessageToParent()">Send Message</button>
-            <button onclick="setCookieDirectly()">Set Cookie (SameSite=None)</button>
-            <button onclick="clearInputs()">Clear</button>
-        </div>
-        
-        <div class="message-section">
-            <h2>📨 Messages Log</h2>
-            <div id="messagesLog" class="messages-log">
-                <div class="message-item">
-                    <span class="timestamp">Ready</span> - Waiting for messages...
+        <div class="controls">
+            <h2>📡 Send Messages to Iframe</h2>
+            <input type="text" id="parentMessageInput" placeholder="Enter message to send to iframe..." />
+            <textarea id="parentDataInput" placeholder="Optional: JSON data to send"></textarea>
+            <button onclick="sendMessageToIframe()">Send to Iframe</button>
+            <button onclick="sendPing()" class="secondary">Send Ping</button>
+            <button onclick="clearParentInputs()" class="secondary">Clear</button>
+            
+            <div class="log" id="parentLog">
+                <div class="log-item">
+                    <span class="timestamp">Ready</span> - Parent page loaded, waiting for iframe...
                 </div>
             </div>
-            <button onclick="clearLog()">Clear Log</button>
+            <button onclick="clearParentLog()" class="secondary">Clear Log</button>
         </div>
         
-        <div class="status">
-            <strong>Status:</strong> <span id="status">Ready for communication</span>
+        <div class="iframe-container">
+            <div class="iframe-wrapper">
+                <iframe id="testIframe" src="https://saikedo.github.io/test-iframe-delete/" title="Test Iframe"></iframe>
+            </div>
         </div>
     </div>
 
     <script>
-        // Log function to add messages to the display
-        function logMessage(message, type = 'info') {
-            const log = document.getElementById('messagesLog');
+        // Log function for parent page
+        function logParentMessage(message, type = 'info') {
+            const log = document.getElementById('parentLog');
             const timestamp = new Date().toLocaleTimeString();
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message-item ${type}`;
+            messageDiv.className = `log-item ${type}`;
             messageDiv.innerHTML = `
                 <span class="timestamp">${timestamp}</span> - ${message}
             `;
@@ -166,69 +194,32 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        // Listen for messages from parent window
+        // Listen for messages from iframe
         window.addEventListener('message', function(event) {
-            console.log('Received message from parent:', event);
+            console.log('Parent received message:', event);
             
-            // For security, check event.origin in production
-            // Uncomment next line if you want to restrict to specific parent origin:
-            // if (event.origin !== 'http://127.0.0.1:5500') return;
+            // For security, check origin in production
+            // Uncomment next line if you want to restrict to specific iframe origin:
+            // if (event.origin !== 'http://127.0.0.1:5501') return;
             
             const data = event.data;
-            logMessage(`Received: ${JSON.stringify(data)}`, 'received');
-            
-            // Update status
-            document.getElementById('status').textContent = `Last received: ${new Date().toLocaleTimeString()}`;
+            logParentMessage(`📨 Received from iframe: ${JSON.stringify(data)}`, 'received');
             
             // Handle specific message types
-            if (data.type === 'ping') {
-                // Auto-respond to ping with pong
-                sendMessageToParent('pong', { originalTimestamp: data.timestamp });
-                logMessage('Auto-responded with pong', 'sent');
-            } else if (data.message === 'logCookies') {
-                // Log all cookies when requested
-                const cookies = document.cookie;
-                logMessage(`🍪 Current cookies: ${cookies || 'No cookies found'}`, 'received');
-                
-                // Send cookies back to parent
-                sendMessageToParent('cookies-logged', { 
-                    cookies: cookies,
-                    cookieCount: cookies ? cookies.split(';').length : 0,
-                    domain: window.location.hostname,
-                    url: window.location.href
-                });
-            } else if (data.message === 'setCookies') {
-                // Set a test cookie - try different approaches for cross-origin
-                const isHTTPS = window.location.protocol === 'https:';
-                const cookieString = isHTTPS 
-                    ? "hello=world; path=/; SameSite=None; Secure"
-                    : "hello=world; path=/; SameSite=Lax";
-                
-                document.cookie = cookieString;
-                logMessage(`🍪 Attempted to set cookie: ${cookieString}`, 'received');
-                
-                // Check immediately if cookie was set
-                const cookies = document.cookie;
-                const wasSet = cookies.includes('hello=world');
-                logMessage(`🍪 Cookie set success: ${wasSet}`, 'received');
-                logMessage(`🍪 Current cookies: ${cookies || 'No cookies found'}`, 'received');
-                
-                // Send cookies back to parent
-                sendMessageToParent('cookies-logged', { 
-                    cookies: cookies,
-                    cookieCount: cookies ? cookies.split(';').length : 0,
-                    domain: window.location.hostname,
-                    url: window.location.href
-                });
+            if (data.type === 'iframe-message') {
+                if (data.message === 'iframe-ready') {
+                    logParentMessage('✅ Iframe is ready for communication!', 'received');
+                }
             }
         });
 
-        // Send message to parent window
-        function sendMessageToParent(customMessage = null, customData = null) {
-            const messageInput = document.getElementById('messageInput');
-            const dataInput = document.getElementById('dataInput');
+        // Send message to iframe
+        function sendMessageToIframe(customMessage = null, customData = null) {
+            const iframe = document.getElementById('testIframe');
+            const messageInput = document.getElementById('parentMessageInput');
+            const dataInput = document.getElementById('parentDataInput');
             
-            const message = customMessage || messageInput.value || 'Hello from iframe!';
+            const message = customMessage || messageInput.value || 'Hello from parent!';
             let data = customData;
             
             if (!customData && dataInput.value) {
@@ -240,75 +231,68 @@
             }
             
             const payload = {
-                type: 'iframe-message',
+                type: 'parent-message',
                 message: message,
                 timestamp: new Date().toISOString(),
-                data: data
+                data: data,
+                source: 'parent-window'
             };
             
-            // Send to parent window (use '*' for any origin, or specify specific origin for security)
-            window.parent.postMessage(payload, '*');
+            // Send message to iframe
+            iframe.contentWindow.postMessage(payload, '*');
             
-            logMessage(`Sent: ${JSON.stringify(payload)}`, 'sent');
-            document.getElementById('status').textContent = `Last sent: ${new Date().toLocaleTimeString()}`;
+            logParentMessage(`📤 Sent to iframe: ${JSON.stringify(payload)}`, 'sent');
             
             // Clear inputs if not a custom message
             if (!customMessage) {
-                clearInputs();
+                clearParentInputs();
             }
         }
 
-        // Clear input fields
-        function clearInputs() {
-            document.getElementById('messageInput').value = '';
-            document.getElementById('dataInput').value = '';
+        // Send a ping message
+        function sendPing() {
+            sendMessageToIframe('ping', { 
+                timestamp: new Date().toISOString(),
+                requestId: Math.random().toString(36).substr(2, 9)
+            });
         }
 
-        // Clear messages log
-        function clearLog() {
-            document.getElementById('messagesLog').innerHTML = `
-                <div class="message-item">
-                    <span class="timestamp">Cleared</span> - Log cleared
+        // Clear parent input fields
+        function clearParentInputs() {
+            document.getElementById('parentMessageInput').value = '';
+            document.getElementById('parentDataInput').value = '';
+        }
+
+        // Clear parent log
+        function clearParentLog() {
+            document.getElementById('parentLog').innerHTML = `
+                <div class="log-item">
+                    <span class="timestamp">Cleared</span> - Parent log cleared
                 </div>
             `;
         }
 
-        // Set cookie directly from button click
-        function setCookieDirectly() {
-            const isHTTPS = window.location.protocol === 'https:';
-            const cookieString = isHTTPS 
-                ? "original-cookie=test-value; path=/; SameSite=None; Secure"
-                : "original-cookie=test-value; path=/; SameSite=Lax";
-            
-            document.cookie = cookieString;
-            logMessage(`🍪 Direct cookie set: ${cookieString}`, 'info');
-            
-            // Check immediately if cookie was set
-            const cookies = document.cookie;
-            const wasSet = cookies.includes('original-cookie=test-value');
-            logMessage(`🍪 Cookie set success: ${wasSet}`, wasSet ? 'info' : 'received');
-            
-            if (wasSet) {
-                logMessage(`🍪 All cookies: ${cookies}`, 'info');
-            }
-        }
-
-        // Send initial ready message to parent
-        window.addEventListener('load', function() {
-            sendMessageToParent('iframe-ready', { 
-                url: window.location.href,
-                userAgent: navigator.userAgent 
-            });
-        });
-
         // Handle Enter key in message input
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        document.getElementById('parentMessageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                sendMessageToParent();
+                sendMessageToIframe();
             }
         });
 
-        console.log('Iframe communication script loaded');
+        // Test automatic communication when iframe loads
+        window.addEventListener('load', function() {
+            logParentMessage('🚀 Parent page loaded');
+            
+            // Wait a bit for iframe to load, then send welcome message
+            setTimeout(function() {
+                sendMessageToIframe('Welcome from parent!', { 
+                    autoSent: true,
+                    parentUrl: window.location.href 
+                });
+            }, 2000);
+        });
+
+        console.log('Parent page script loaded');
     </script>
 </body>
 </html>
